@@ -68,6 +68,12 @@ const clientEntrypoints = [
     filename: 'sidebar-about-page',
     template: './src/client/sidebar-about-page/index.html',
   },
+  {
+    name: 'CLIENT - Sidebar OpenAI Page',
+    entry: './src/client/sidebar-openAI/index.js',
+    filename: 'sidebar-openAI',
+    template: './src/client/sidebar-openAI/index.html',
+  },
 ];
 
 // define certificate locations

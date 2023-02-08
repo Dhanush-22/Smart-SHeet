@@ -4,6 +4,8 @@ import {
   openDialogBootstrap,
   openDialogTailwindCSS,
   openAboutSidebar,
+  Function3,
+  Function1,
 } from './ui';
 
 import { getSheetsData, addSheet, deleteSheet, setActiveSheet } from './sheets';
@@ -19,4 +21,6 @@ export {
   addSheet,
   deleteSheet,
   setActiveSheet,
+  Function3,
+  Function1,
 };

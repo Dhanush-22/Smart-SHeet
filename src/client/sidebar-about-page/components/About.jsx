@@ -3,23 +3,14 @@ import React from 'react';
 const About = () => (
   <div>
     <p>
-      <b>☀️ React app inside a sidebar! ☀️</b>
+      <b>Welcome to the Smart Sheet</b>
     </p>
     <p>
-      This is a very simple page demonstrating how to build a React app inside a
-      sidebar.
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus quibusdam inventore eos doloribus totam laboriosam. Eius aperiam voluptatibus maxime iusto.
     </p>
     <p>
-      Visit the Github repo for more information on how to use this project.
+      Integration GPT 3 with the spreadsheet
     </p>
-    <p>- Elisha Nuchi</p>
-    <a
-      href="https://www.github.com/enuchi/React-Google-Apps-Script"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      React + Google Apps Script
-    </a>
   </div>
 );
 
