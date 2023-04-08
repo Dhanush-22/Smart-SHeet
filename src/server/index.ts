@@ -15,7 +15,7 @@ import {
 import { getSheetsData, addSheet, deleteSheet, setActiveSheet, 
          getAllHeaders, getActiveUserEmail, 
          fillDataInSelectedColumn, fillDataInSelectedCellsOnceForCell,
-         SelectedCellsAllTogether, fillDataInSelectedColumnOnceForAll, } from './sheets';
+         SelectedCellsAllTogether, fillDataInSelectedColumnOnceForAll, getSelectedCellsA1Notation } from './sheets';
 
 // Public functions must be exported as named exports
 export {
@@ -39,5 +39,6 @@ export {
   fillDataInSelectedCellsOnceForCell,
   fillDataInSelectedColumn,
   SelectedCellsAllTogether,
-  fillDataInSelectedColumnOnceForAll
+  fillDataInSelectedColumnOnceForAll,
+  getSelectedCellsA1Notation
 };

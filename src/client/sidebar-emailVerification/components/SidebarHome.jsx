@@ -50,22 +50,35 @@ const SheetEditor1 = () => {
   const [chooseAdvancedOptions, setChooseAdvancedOptions] = useState(false);
 
 
+  const hideString = async (str) => {
+    const length2 = str.length;
+    const visibleChars = 4; // Number of characters to show at the start and end of the string
+    const hiddenChars = length2 - visibleChars * 2; // Number of characters to hide in the middle
+    const hiddenStr = '*'.repeat(hiddenChars); // Create a string of asterisks of the same length as the hidden characters
+    return `${str.substring(0, visibleChars)}${hiddenStr}${str.substring(length2 - visibleChars, length2)}`;
+  }
+
+
   // Response:  {openAIAPIKey: 'APt231r6t23JHWGSHKDEF', authorisedEmail: 'bedredhanush.nitap@gmail.com', modifiedOn: 1671294164728, displayKey: 'APt2****KDEF'}
   const handleFetchData = async (email) => {
     try {
-      const response = await axios.get('https://api.nuw.io/v1/api/core/get-credentials', { headers: { "x-email": email } })
-      // console.log("Response ", response);
-      const fetchAPIres = response.data.responseData;
-      if (Object.keys(fetchAPIres).length === 0) {
+      console.log("Fetching data of ",email);
+      const response = await axios.get('https://smartsheet-api.onrender.com/api/', { headers: { "email": email } })
+      console.log("Response1 : ", response);
+      const fetchAPIres = response.data;
+      if (!fetchAPIres) {
         console.log("Empty");
         setIsNewUser(true);
       } else {
-        await setOpenApiKey(fetchAPIres.openAIAPIKey);
-        setApiKey(fetchAPIres.displayKey);
-        const response3 = await serverFunctions.setAPIKey(fetchAPIres.openAIAPIKey);
+        await setOpenApiKey(fetchAPIres.openAIAPI);
+        console.log("setOpenAPIkey has been updated ",fetchAPIres.openAIAPI);
+        const hiddenString = await hideString(fetchAPIres.openAIAPI);
+        console.log("Hidden: ",hiddenString);
+        setApiKey(hiddenString);
+        const response3 = await serverFunctions.setAPIKey(fetchAPIres.openAIAPI);
         console.log("Response3: ", response3);
       }
-      return [1, response.data.responseData];
+      return [1, response.data];
     } catch (e) {
       console.log("Error: ", e);
       return [-1, ""];
@@ -76,11 +89,11 @@ const SheetEditor1 = () => {
     console.log("Calling POST request");
    
     try {
-      const response = await axios.post('https://api.nuw.io/v1/api/core/update-credentials', {
-        "openAIAPIKey": apiKey,
-        "authorisedEmail": userEmail
-      })
-      console.log("Response: ", response);
+      const response = await axios.post('https://smartsheet-api.onrender.com/api/',{headers : { 
+        "email": userEmail,
+        "openAIAPI": apiKey
+      }})
+      console.log("Response4: ", response);
       const upd = await handleFetchData(userEmail);
     } catch (e) {
       console.log("Error: ", e);
@@ -91,12 +104,21 @@ const SheetEditor1 = () => {
     const func1 = async () => {
       try {
         const response = await serverFunctions.getActiveUserEmail();
+        
+        console.log("UsrEmail res: ",response);
+
         const res2 = await setUserEmail(response);
+
+        console.log("UserEmail: ",userEmail);
         const fetchAPI = await handleFetchData(response);
+
+        console.log("Done handlefetch");
+
         if (fetchAPI[0] !== 1) {
-          console.log("Error while fetching data");
+          console.log("Error while fetching data..");
         }
         const fetchAPIres = await fetchAPI[1];
+
       } catch (error) {
         // eslint-disable-next-line no-alert
         alert(error);
@@ -178,6 +200,7 @@ const SheetEditor1 = () => {
         console.log("Here3..........", colSelectedForVerify, prompt);
         setIsFetching(true);
         const res = await serverFunctions.fillDataInSelectedColumn(prompt, colSelectedForVerify);
+        console.log("Res3, ",res);
         setIsFetching(false);
         if(res == -1){
           console.log("Error ......")
@@ -195,7 +218,7 @@ const SheetEditor1 = () => {
 
     else if (colSelectedForVerify && !selectedOnceForEachCell) {
       try {
-        console.log("Here3..........", colSelectedForVerify, prompt);
+        console.log("Here4..........", colSelectedForVerify, prompt);
         setIsFetching(true);
         const res = await serverFunctions.fillDataInSelectedColumnOnceForAll(prompt, colSelectedForVerify);
         setIsFetching(false);
@@ -221,7 +244,8 @@ const SheetEditor1 = () => {
     try {
       if (!apiKey.includes("*")) {
         setIsFetching(true);
-        await serverFunctions.setAPIKey(apiKey);
+        const res = await serverFunctions.setAPIKey(apiKey);
+        console.log(res);
         await handlePostData();
         setUpdated(true);
         setIsFetching(false);
@@ -277,7 +301,7 @@ const SheetEditor1 = () => {
         {(warning) && <p className="wariningP">Invalid API. Please update the API in initilaize page & try again.</p>}
         {(manualPrompt && prompt.length < 2) && <p className="wariningP">Please fill the Prompt</p>}
 
-        {/* <div className='card'>
+        <div className='card'>
           <div className="cardContainer">
             <h2>Instructions</h2>
             <p>
@@ -292,7 +316,7 @@ const SheetEditor1 = () => {
             <p><b>Example1:</b> type in a cell =runOpenAI(&quot;Who is the CEO of Apple&quot;) and press Enter to see result</p>
             <p><b>Example2:</b>: Suppose cell A2 has value &quot;Amazon&quot; then type =runOpenAI(concat(&quot;Categorize the comapany type into Ecommerce or other of &quot;,A2)) in a cell and press Enter to see result</p>
           </div>
-        </div> */}
+        </div>
 
         <div className='card'>
           <div className="cardContainer">
@@ -355,7 +379,7 @@ const SheetEditor1 = () => {
               <input type="radio" id="id4" name="option2" value="" onClick={() => { setSelectedOnceForEachCell(false) }} />
               <label className="radioBtnTxt">Once for selection</label>
             </div>
-            <div className='RadioBtnsClass'>
+            {/* <div className='RadioBtnsClass'>
               <div className='PreviewClass' style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: 'Roboto'}}>
                 <h4>Advanced Options</h4>
                 {!toggle ? <ExpandMore style={{ color: "#3b80fe", cursor: "pointer" }} onClick={() => { setToggle(true); }} /> : <ExpandLess style={{ color: "#3b80fe", cursor: "pointer" }} onClick={() => { setToggle(false); }} />}
@@ -378,7 +402,7 @@ const SheetEditor1 = () => {
                 :
                 <></>
               }
-            </div>
+            </div> */}
           </div>
         </div>
 

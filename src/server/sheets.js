@@ -110,39 +110,108 @@ async function runOpenAI2(prompt){
 }
 
 
-export const fillDataInSelectedCellsOnceForCell = async (prompt) => {
-  if (!PropertiesService.getUserProperties().getProperty('APIkey')){
-    return -1;
+
+function getSelectedCellsA1Notation() {
+  var rangeList = SpreadsheetApp.getActiveRangeList();
+  var ranges = rangeList.getRanges();
+  var cells = [];
+  var cellsData = [];
+  
+  for (let i = 0; i < ranges.length; i++) {
+    var range = ranges[i];
+    var startRow = range.getRow();
+    var endRow = startRow + range.getNumRows() - 1;
+    var column = range.getColumn();
+    
+    for (var row = startRow; row <= endRow; row++) {
+      var cell = SpreadsheetApp.getActive().getActiveSheet().getRange(row, column);
+      cells.push(cell.getA1Notation());
+      cellsData.push(cell.getValue());
+    }
   }
+  
+  for (let i = 0; i < cells.length; i++) {
+    Logger.log("Selected Cell: " + cells[i] + " Data: " + cellsData[i]);
+  }
+
+  // console.log("Cells: ",cells);
+  // console.log("Cells Data: ",cellsData);
+  
+  // Cells:  [ 'B1', 'B3', 'B5', 'B12' ]
+  // Cells Data:  [ 2, 200, 1000, '' ]
+  return [cells, cellsData];
+}
+
+
+
+export const fillDataInSelectedCellsOnceForCell = async (prompt) => {
+  
+  const [cells, cellsData] = getSelectedCellsA1Notation();
+  
   var spreadsheet = SpreadsheetApp.getActive();
-  var range = spreadsheet.getActiveRange();
-  var num_rows = range.getNumRows();
-  var num_cols = range.getNumColumns();
-  let tmp = range.getRow();
 
   let tmpBool = false;
 
-  for (var x=1; x<num_cols + 1; x++) {
-    for (var i=1; i<num_rows + 1; i++) {
-      let entity_name = spreadsheet.getRange('A'+(tmp+i-1)).getValue();
-      let fill_cell = range.getCell(i, x);
-      // let result = await runOpenAI2(prompt +" "+entity_name);
-      let result;
-      if(entity_name){
-        result = await runOpenAI2(prompt+" "+entity_name);
-      }else{
-        result = await runOpenAI2(prompt);
-      }
-      if(result[0] == -1 && !tmpBool){
-        return -1;
-      }
-      let newResult = result[1].replace(/\s+/g,' ').trim();
-      fill_cell.setValue([newResult]);
-      tmpBool = true;
+  for (let i=0; i<cells.length; i++){
+    var cell = cells[i];
+    var cellNumber = cell.substring(1);
+    let entity_name = spreadsheet.getRange('A'+cellNumber).getValue();
+
+    let result;
+    if(entity_name){
+      result = await runOpenAI2(prompt+" "+entity_name);
+    }else{
+      result = await runOpenAI2(prompt);
     }
+
+    if(result[0] == -1 && !tmpBool){
+      return -1;
+    }
+
+    let newResult = result[1].replace(/\s+/g,' ').trim();
+    spreadsheet.getRange(cell).setValue(newResult);
+
+    tmpBool = true;
+
   }
   return 1;
 }
+
+
+
+// export const fillDataInSelectedCellsOnceForCell = async (prompt) => {
+//   if (!PropertiesService.getUserProperties().getProperty('APIkey')){
+//     return -1;
+//   }
+//   var spreadsheet = SpreadsheetApp.getActive();
+//   var range = spreadsheet.getActiveRange();
+//   var num_rows = range.getNumRows();
+//   var num_cols = range.getNumColumns();
+//   let tmp = range.getRow();
+
+//   let tmpBool = false;
+
+//   for (var x=1; x<num_cols + 1; x++) {
+//     for (var i=1; i<num_rows + 1; i++) {
+//       let entity_name = spreadsheet.getRange('A'+(tmp+i-1)).getValue();
+//       let fill_cell = range.getCell(i, x);
+//       // let result = await runOpenAI2(prompt +" "+entity_name);
+//       let result;
+//       if(entity_name){
+//         result = await runOpenAI2(prompt+" "+entity_name);
+//       }else{
+//         result = await runOpenAI2(prompt);
+//       }
+//       if(result[0] == -1 && !tmpBool){
+//         return -1;
+//       }
+//       let newResult = result[1].replace(/\s+/g,' ').trim();
+//       fill_cell.setValue([newResult]);
+//       tmpBool = true;
+//     }
+//   }
+//   return 1;
+// }
 
 
 export const getEntireDataOfFirstCol = async () =>{
@@ -181,9 +250,10 @@ export const getColIdx = async (columnName) =>{
 
 export const fillDataInSelectedColumn = async (prompt, param) =>{
   if (!PropertiesService.getUserProperties().getProperty('APIkey')){
+    console.log("API not set in the properties");
     return -1; // API not set
   }
-  
+
   let ss = SpreadsheetApp.getActiveSpreadsheet();
   let currSheet = ss.getActiveSheet().getName();
   let sheet = ss.getSheetByName(currSheet);
@@ -203,7 +273,6 @@ export const fillDataInSelectedColumn = async (prompt, param) =>{
     let entity_name = await range.getCell(i,1).getValue();
     let fill_cell = await range.getCell(i, colIdx);
 
-    // let result = await get_x_of_y(property_name, entity_name);
     let result;
     if(entity_name){
       result = await runOpenAI2(prompt+" "+entity_name);
@@ -214,6 +283,7 @@ export const fillDataInSelectedColumn = async (prompt, param) =>{
       return -1;
     }
     let newResult = result[1].replace(/\s+/g,' ').trim();
+    // let newRes2 = "123"
     fill_cell.setValue([newResult]);
     tmpBool = true;
   }

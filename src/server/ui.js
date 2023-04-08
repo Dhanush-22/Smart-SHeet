@@ -5,7 +5,7 @@
 
 export const onOpen = () => {
   const menu = SpreadsheetApp.getUi()
-    .createMenu('OpenAI') // edit me!
+    .createMenu('Smart Sheet') 
     .addItem('App', 'Function1')
     .addItem('Additional settings', 'openDialog')
     .addItem('About Plugin', 'Function3');
@@ -14,7 +14,7 @@ export const onOpen = () => {
 
 export const Function1 = () => {
   const widget = HtmlService.createHtmlOutputFromFile("sidebar-emailVerification");
-  widget.setTitle("OPENAI");
+  widget.setTitle("Smart Sheet");
   SpreadsheetApp.getUi().showSidebar(widget);
 }
 
@@ -23,10 +23,12 @@ export const setAPIKey = (newKey) =>{
   try {
     const userProperties = PropertiesService.getUserProperties();
     userProperties.setProperty('APIkey', newKey);
+    return PropertiesService.getUserProperties().getProperty('APIkey');
   } catch (err) {
     console.log('Failed with error %s', err.message);
+    return "None";
   }
-  return "updated";
+  // return "updated";
 }
 
 export const getAPIKey = () => {
